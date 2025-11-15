@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 import AppLayout from '@/components/AppLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,7 @@ interface SetupData {
 
 export default function Dashboard() {
   const router = useRouter()
+  const { user, loading } = useAuth()
   const [userData, setUserData] = useState<UserData | null>(null)
   const [setupData, setSetupData] = useState<SetupData | null>(null)
   const [budget, setBudget] = useState(0)
@@ -41,11 +43,15 @@ export default function Dashboard() {
   })
 
   useEffect(() => {
-    const userName = localStorage.getItem('upgrd_user_name')
-    if (!userName) {
-      router.push('/')
+    if (loading) return
+
+    if (!user) {
+      router.push('/login')
       return
     }
+
+    // Usar email do usuário como nome se não tiver nome
+    const userName = user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário'
 
     // Load user data
     const savedData = localStorage.getItem('upgrd_user_data')
@@ -83,7 +89,7 @@ export default function Dashboard() {
     } else {
       setAiSuggestion('Complete suas informações de setup e defina seu orçamento para receber sugestões personalizadas!')
     }
-  }, [router])
+  }, [user, loading, router])
 
   const generateSmartSuggestion = (setup: SetupData, userBudget: number) => {
     // Analyze setup weaknesses
@@ -193,9 +199,9 @@ export default function Dashboard() {
     }
   }
 
-  if (!userData) {
+  if (loading || !userData) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-[#0A0A0A]">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#4DE1FF]"></div>
       </div>
     )

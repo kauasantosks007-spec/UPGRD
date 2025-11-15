@@ -61,11 +61,14 @@ export default function LoginPage() {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: 'Login realizado com sucesso!' });
-      setTimeout(() => router.push('/'), 1000);
+      if (data.session) {
+        setMessage({ type: 'success', text: 'Login realizado com sucesso!' });
+        // Usar router.push e router.refresh para garantir atualização
+        router.push('/dashboard');
+        router.refresh();
+      }
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || 'Erro ao fazer login' });
-    } finally {
       setLoading(false);
     }
   };
@@ -89,17 +92,18 @@ export default function LoginPage() {
 
       if (error) throw error;
 
-      if (data.user) {
+      if (data.user && data.session) {
         setMessage({ 
           type: 'success', 
           text: 'Conta criada com sucesso! Redirecionando...' 
         });
         
-        setTimeout(() => router.push('/'), 1500);
+        // Usar router.push e router.refresh para garantir atualização
+        router.push('/dashboard');
+        router.refresh();
       }
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || 'Erro ao criar conta' });
-    } finally {
       setLoading(false);
     }
   };
