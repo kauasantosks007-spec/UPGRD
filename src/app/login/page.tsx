@@ -52,6 +52,7 @@ export default function LoginPage() {
     setMessage(null);
 
     try {
+      // Cadastro direto sem confirmação de email
       const { data, error } = await supabase.auth.signUp({
         email: signupEmail,
         password: signupPassword,
@@ -59,20 +60,22 @@ export default function LoginPage() {
           data: {
             name: signupName,
           },
+          emailRedirectTo: undefined, // Remove redirect
         },
       });
 
       if (error) throw error;
 
-      setMessage({ 
-        type: 'success', 
-        text: 'Cadastro realizado! Verifique seu email para confirmar.' 
-      });
-      
-      // Limpar campos
-      setSignupEmail('');
-      setSignupPassword('');
-      setSignupName('');
+      // Login automático após cadastro
+      if (data.user) {
+        setMessage({ 
+          type: 'success', 
+          text: 'Conta criada com sucesso! Redirecionando...' 
+        });
+        
+        // Aguarda um momento e redireciona
+        setTimeout(() => router.push('/'), 1500);
+      }
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || 'Erro ao criar conta' });
     } finally {
