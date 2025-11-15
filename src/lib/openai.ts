@@ -1,18 +1,18 @@
 import OpenAI from 'openai';
 
-// Inicializa o cliente OpenAI com a chave de API do ambiente
-const apiKey = process.env.OPENAI_API_KEY;
+// Função para obter o cliente OpenAI (lazy initialization)
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY;
 
-if (!apiKey) {
-  console.error('❌ OPENAI_API_KEY não encontrada nas variáveis de ambiente!');
-  throw new Error('OPENAI_API_KEY não configurada');
+  if (!apiKey) {
+    console.error('❌ OPENAI_API_KEY não encontrada nas variáveis de ambiente!');
+    throw new Error('OPENAI_API_KEY não configurada');
+  }
+
+  return new OpenAI({
+    apiKey: apiKey,
+  });
 }
-
-console.log('✅ OpenAI configurado com sucesso');
-
-const openai = new OpenAI({
-  apiKey: apiKey,
-});
 
 /**
  * Função principal para interagir com a IA UPGRD
@@ -32,6 +32,8 @@ export async function chatWithUpgrdAI(
   }
 ) {
   try {
+    const openai = getOpenAIClient();
+    
     const systemPrompt = `
 --------------------------------------------------------
 ---- SISTEMA PRINCIPAL UPGRD (PROMPT OFICIAL DA LASY) ---
@@ -204,6 +206,8 @@ export async function analyzeSetup(setup: {
   cooling?: string;
   monitor?: string;
 }) {
+  const openai = getOpenAIClient();
+  
   const setupDescription = `
 Analise este setup e forneça:
 1. Pontuação de cada componente (CPU até 30pts, GPU até 40pts, RAM até 10pts, Armazenamento até 5pts, Placa-mãe até 5pts, Cooling até 5pts, Monitor até 5pts)
@@ -269,6 +273,8 @@ export async function generateUpgradeRecommendations(
   currentSetup: any,
   budget: number
 ) {
+  const openai = getOpenAIClient();
+  
   const prompt = `
 Baseado no setup atual e no orçamento de R$ ${budget}, sugira upgrades prioritários.
 
@@ -316,5 +322,3 @@ Forneça recomendações em formato JSON:
     };
   }
 }
-
-export default openai;
