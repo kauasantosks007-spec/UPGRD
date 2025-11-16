@@ -3,7 +3,8 @@
 import { ReactNode, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Monitor, Target, Trophy, User, HelpCircle, TrendingUp, DollarSign } from 'lucide-react'
+import { Home, Monitor, Target, Trophy, User, HelpCircle, TrendingUp, DollarSign, Menu, X, ChevronLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface AppLayoutProps {
   children: ReactNode
@@ -13,6 +14,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname()
   const [userName, setUserName] = useState('')
   const [userAvatar, setUserAvatar] = useState('👤')
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   useEffect(() => {
     // Load user name and avatar
@@ -53,16 +56,47 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-[#0A0A0A]">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-40 p-2 bg-[#111111] border border-[#1A1A1A] rounded-lg text-white hover:bg-[#151515] transition-all"
+      >
+        <Menu className="w-6 h-6" />
+      </button>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-[#0A0A0A] border-r border-[#1A1A1A] fixed h-full overflow-y-auto">
+      <aside
+        className={`
+          ${isSidebarCollapsed ? 'w-20' : 'w-64'}
+          bg-[#0A0A0A] border-r border-[#1A1A1A] fixed h-full overflow-y-auto z-50 transition-all duration-300
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+          lg:translate-x-0
+        `}
+      >
         <div className="p-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#4DE1FF] to-[#FF5BD4] bg-clip-text text-transparent mb-2">
-            UPGRD
+          {/* Close button for mobile */}
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="lg:hidden absolute top-4 right-4 p-2 text-white hover:bg-[#151515] rounded-lg transition-all"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          <h1 className={`text-3xl font-bold bg-gradient-to-r from-[#4DE1FF] to-[#FF5BD4] bg-clip-text text-transparent mb-2 ${isSidebarCollapsed ? 'text-center' : ''}`}>
+            {isSidebarCollapsed ? 'U' : 'UPGRD'}
           </h1>
           
           {/* User Info */}
-          {userName && (
-            <div className="mb-6 p-3 bg-[#111111] rounded-lg border border-[#1A1A1A]">
+          {userName && !isSidebarCollapsed && (
+            <div className="mb-4 p-3 bg-[#111111] rounded-lg border border-[#1A1A1A]">
               <div className="flex items-center gap-3">
                 <div className="text-3xl">{userAvatar}</div>
                 <div className="flex-1 min-w-0">
@@ -73,6 +107,23 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </div>
           )}
 
+          {/* Collapsed User Avatar */}
+          {userName && isSidebarCollapsed && (
+            <div className="mb-4 flex justify-center">
+              <div className="text-3xl">{userAvatar}</div>
+            </div>
+          )}
+
+          {/* Toggle Sidebar Button (Desktop only) */}
+          <Button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="hidden lg:flex w-full mb-4 bg-[#111111] border border-[#1A1A1A] text-white hover:bg-[#151515] transition-all justify-center items-center gap-2"
+            size="sm"
+          >
+            <ChevronLeft className={`w-4 h-4 transition-transform ${isSidebarCollapsed ? 'rotate-180' : ''}`} />
+            {!isSidebarCollapsed && <span>Esconder Menu</span>}
+          </Button>
+
           <nav className="space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon
@@ -81,14 +132,16 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-lg transition-all ${
                     isActive
                       ? 'bg-[#151515] border-l-2 border-[#4DE1FF] text-white'
                       : 'text-[#BEBEBE] hover:text-white hover:bg-[#151515]/50'
                   }`}
+                  title={isSidebarCollapsed ? item.label : ''}
                 >
                   <Icon className={`w-5 h-5 ${isActive ? 'text-[#4DE1FF]' : ''}`} />
-                  <span className="font-medium">{item.label}</span>
+                  {!isSidebarCollapsed && <span className="font-medium">{item.label}</span>}
                 </Link>
               )
             })}
@@ -97,7 +150,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="ml-64 flex-1 p-8">
+      <main className={`flex-1 p-4 lg:p-8 ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'} transition-all duration-300 pt-16 lg:pt-8`}>
         {children}
       </main>
     </div>

@@ -30,13 +30,13 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-16 w-16 md:h-32 md:w-32 border-b-2 border-primary"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex items-center justify-center p-3 md:p-4 relative overflow-hidden">
       {/* Particles Background */}
       <div className="particles">
         {[...Array(20)].map((_, i) => (
@@ -55,26 +55,26 @@ export default function Home() {
       </div>
 
       <Card className="w-full max-w-md bg-card/95 backdrop-blur-sm border-primary/50">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold neon-text text-primary">
+        <CardHeader className="text-center pb-4 md:pb-6">
+          <CardTitle className="text-2xl md:text-3xl font-bold neon-text text-primary">
             UPGRD
           </CardTitle>
-          <p className="text-muted-foreground">
+          <p className="text-sm md:text-base text-muted-foreground">
             Como você quer ser chamado na UPGRD?
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 md:space-y-4">
           <Input
             type="text"
             placeholder="Digite seu nome..."
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleEnter()}
-            className="text-center text-lg"
+            className="text-center text-base md:text-lg"
           />
           <Button
             onClick={handleEnter}
-            className="w-full text-lg py-6 neon-glow hover:scale-105 transition-transform"
+            className="w-full text-base md:text-lg py-5 md:py-6 neon-glow hover:scale-105 transition-transform"
             disabled={!userName.trim()}
           >
             Entrar no App
