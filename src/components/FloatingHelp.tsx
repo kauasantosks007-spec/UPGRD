@@ -13,43 +13,6 @@ export default function FloatingHelp() {
   ])
   const [input, setInput] = useState('')
 
-  const getResponse = (userMessage: string): string => {
-    const msg = userMessage.toLowerCase()
-
-    // Respostas sobre XP
-    if (msg.includes('xp') || msg.includes('experiência') || msg.includes('ganhar')) {
-      return 'Você ganha XP de várias formas:\n\n• Registrar setup → +40 XP\n• Atualizar setup → +20 XP\n• Completar missão semanal → +10 a +40 XP\n• Usar o balão de ajuda → +5 XP\n• Abrir área ranking → +10 XP'
-    }
-
-    // Respostas sobre missões
-    if (msg.includes('missão') || msg.includes('missões') || msg.includes('missao') || msg.includes('missoes')) {
-      return 'As missões semanais são tarefas que você pode completar para ganhar XP extra! Toda semana você recebe 5 novas missões, como fazer benchmark, atualizar drivers, limpar o PC, etc. Cada missão vale entre 10-40 XP.'
-    }
-
-    // Respostas sobre níveis
-    if (msg.includes('nível') || msg.includes('nivel') || msg.includes('subir')) {
-      return 'O sistema de níveis funciona assim:\n\nNível 1 → 100 XP\nNível 2 → 250 XP\nNível 3 → 500 XP\nNível 4 → 900 XP\nNível 5 → 1500 XP\n\nQuanto mais XP você ganha, mais rápido sobe de nível!'
-    }
-
-    // Respostas sobre setup
-    if (msg.includes('setup') || msg.includes('pc') || msg.includes('computador')) {
-      return 'No UPGRD, você pode registrar seu setup completo (CPU, GPU, RAM, etc.) e receber uma análise detalhada com pontuação de 0-100. A IA identifica pontos fracos e sugere upgrades dentro do seu orçamento!'
-    }
-
-    // Respostas sobre ranking
-    if (msg.includes('ranking') || msg.includes('tier') || msg.includes('classificação')) {
-      return 'O ranking compara seu setup com outros usuários usando Score total, Nível, XP recente e eficiência. Os setups são classificados em Tiers: S (melhor), A, B e C. Quanto melhor seu setup e nível, maior sua classificação!'
-    }
-
-    // Respostas sobre pontuação
-    if (msg.includes('pontuação') || msg.includes('pontos') || msg.includes('score')) {
-      return 'A pontuação do seu setup é calculada assim:\n\nCPU → até 30 pts\nGPU → até 40 pts\nRAM → até 10 pts\nArmazenamento → até 5 pts\nPlaca-mãe → até 5 pts\nCooling → até 5 pts\nMonitor → até 5 pts\n\nTotal: 0-100 pontos'
-    }
-
-    // Resposta padrão
-    return 'Desculpe, não entendi sua pergunta. Você pode perguntar sobre:\n\n• Como ganhar XP\n• Missões semanais\n• Sistema de níveis\n• Análise de setup\n• Ranking e tiers\n• Pontuação do setup'
-  }
-
   const handleSend = () => {
     if (!input.trim()) return
 
@@ -57,11 +20,27 @@ export default function FloatingHelp() {
     setMessages(prev => [...prev, { role: 'user', text: userMessage }])
     setInput('')
 
-    // Simula um pequeno delay para parecer mais natural
+    // Simulated AI responses
     setTimeout(() => {
-      const aiResponse = getResponse(userMessage)
-      setMessages(prev => [...prev, { role: 'ai', text: aiResponse }])
-    }, 300)
+      let response = ''
+      const lowerInput = userMessage.toLowerCase()
+
+      if (lowerInput.includes('xp') || lowerInput.includes('experiência')) {
+        response = 'Você ganha XP completando missões, atualizando seu setup e desbloqueando conquistas! Cada ação vale pontos diferentes.'
+      } else if (lowerInput.includes('missão') || lowerInput.includes('missões')) {
+        response = 'As missões resetam toda segunda-feira! Complete-as para ganhar XP e subir de nível. Vá na aba Missões para ver as disponíveis.'
+      } else if (lowerInput.includes('setup') || lowerInput.includes('score')) {
+        response = 'Seu Setup Score é calculado automaticamente pela IA baseado nas peças do seu PC. Quanto melhor o hardware, maior o score! Vá em "Meu Setup" para atualizar.'
+      } else if (lowerInput.includes('nível') || lowerInput.includes('nivel')) {
+        response = 'Você sobe de nível ganhando XP! Cada nível requer mais XP que o anterior. Complete missões e conquistas para progredir mais rápido.'
+      } else if (lowerInput.includes('ranking')) {
+        response = 'O ranking mostra os melhores jogadores do UPGRD! Quanto mais XP e melhor seu setup, maior sua posição no ranking global.'
+      } else {
+        response = 'Posso ajudar com: ganhar XP, completar missões, melhorar setup, subir de nível e entender o ranking. O que você gostaria de saber?'
+      }
+
+      setMessages(prev => [...prev, { role: 'ai', text: response }])
+    }, 500)
   }
 
   return (
@@ -104,7 +83,7 @@ export default function FloatingHelp() {
                       : 'bg-[#111111] text-[#BEBEBE]'
                   }`}
                 >
-                  <div className="whitespace-pre-line">{msg.text}</div>
+                  {msg.text}
                 </div>
               </div>
             ))}

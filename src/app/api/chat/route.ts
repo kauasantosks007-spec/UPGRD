@@ -6,8 +6,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { message, context } = body;
 
-    console.log('[API Chat] Recebida mensagem:', message);
-
     if (!message) {
       return NextResponse.json(
         { error: 'Mensagem é obrigatória' },
@@ -17,21 +15,9 @@ export async function POST(request: NextRequest) {
 
     const response = await chatWithUpgrdAI(message, context);
 
-    console.log('[API Chat] Resposta da IA:', response);
-
-    if (!response.success) {
-      return NextResponse.json(
-        { error: 'Erro ao processar com IA', details: response.error },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ 
-      success: true,
-      message: response.message 
-    });
+    return NextResponse.json(response);
   } catch (error: any) {
-    console.error('[API Chat] Erro:', error);
+    console.error('Erro na API de chat:', error);
     return NextResponse.json(
       { error: 'Erro ao processar solicitação', details: error.message },
       { status: 500 }

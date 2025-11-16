@@ -31,53 +31,6 @@ export default function Ajuda() {
     }
   }, [router])
 
-  const getResponse = (userMessage: string): string => {
-    const msg = userMessage.toLowerCase()
-
-    // Respostas sobre XP
-    if (msg.includes('xp') || msg.includes('experiência') || msg.includes('ganhar')) {
-      return 'Você ganha XP de várias formas:\n\n• Registrar setup → +40 XP\n• Atualizar setup → +20 XP\n• Completar missão semanal → +10 a +40 XP\n• Usar o balão de ajuda → +5 XP\n• Abrir área ranking → +10 XP\n\nCada ação que você faz no app contribui para sua evolução!'
-    }
-
-    // Respostas sobre missões
-    if (msg.includes('missão') || msg.includes('missões') || msg.includes('missao') || msg.includes('missoes')) {
-      return 'As missões semanais são tarefas que você pode completar para ganhar XP extra!\n\nToda semana você recebe 5 novas missões, como:\n• Fazer benchmark\n• Atualizar drivers\n• Limpar o PC\n• Organizar cabos\n• Testar FPS\n• Checar temperaturas\n\nCada missão vale entre 10-40 XP. Complete todas para maximizar seu progresso!'
-    }
-
-    // Respostas sobre níveis
-    if (msg.includes('nível') || msg.includes('nivel') || msg.includes('subir')) {
-      return 'O sistema de níveis funciona assim:\n\nNível 1 → 100 XP\nNível 2 → 250 XP\nNível 3 → 500 XP\nNível 4 → 900 XP\nNível 5 → 1500 XP\n\nQuanto mais XP você ganha, mais rápido sobe de nível! Cada nível desbloqueado mostra sua dedicação e conhecimento sobre hardware.'
-    }
-
-    // Respostas sobre setup
-    if (msg.includes('setup') || msg.includes('pc') || msg.includes('computador') || msg.includes('análise') || msg.includes('analise')) {
-      return 'No UPGRD, você pode registrar seu setup completo incluindo:\n\n• CPU\n• GPU\n• RAM\n• Armazenamento\n• Placa-mãe\n• Cooling\n• Monitor\n\nA IA analisa cada componente e dá uma pontuação de 0-100. Você recebe feedback sobre pontos fracos e sugestões de upgrade dentro do seu orçamento!'
-    }
-
-    // Respostas sobre ranking
-    if (msg.includes('ranking') || msg.includes('tier') || msg.includes('classificação') || msg.includes('classificacao')) {
-      return 'O ranking compara seu setup com outros usuários usando:\n\n• Score total do setup\n• Nível atual\n• XP recente\n• Eficiência custo-benefício\n• Performance geral\n\nOs setups são classificados em Tiers:\n• Tier S (melhor)\n• Tier A\n• Tier B\n• Tier C\n\nQuanto melhor seu setup e nível, maior sua classificação!'
-    }
-
-    // Respostas sobre pontuação
-    if (msg.includes('pontuação') || msg.includes('pontos') || msg.includes('score') || msg.includes('pontuacao')) {
-      return 'A pontuação do seu setup é calculada assim:\n\nCPU → até 30 pts\nGPU → até 40 pts\nRAM → até 10 pts\nArmazenamento → até 5 pts\nPlaca-mãe → até 5 pts\nCooling → até 5 pts\nMonitor → até 5 pts\n\nTotal: 0-100 pontos\n\nA GPU tem maior peso porque é o componente mais importante para gaming e performance gráfica!'
-    }
-
-    // Respostas sobre perfil
-    if (msg.includes('perfil') || msg.includes('nome') || msg.includes('mudar')) {
-      return 'No seu Perfil você pode:\n\n• Ver e mudar seu nome\n• Acompanhar seu nível atual\n• Ver quanto XP você tem\n• Conferir seu Score UPGRD\n• Visualizar seu setup salvo\n\nÉ o hub central das suas informações no app!'
-    }
-
-    // Respostas sobre como usar o app
-    if (msg.includes('como usar') || msg.includes('começar') || msg.includes('comecar') || msg.includes('funciona')) {
-      return 'Para começar no UPGRD:\n\n1. Registre seu setup na aba Setup\n2. Complete missões semanais para ganhar XP\n3. Suba de nível e melhore seu ranking\n4. Receba recomendações de upgrade\n5. Compare seu setup com outros usuários\n\nO app foi feito para ser intuitivo - explore cada aba e divirta-se!'
-    }
-
-    // Resposta padrão
-    return 'Desculpe, não entendi sua pergunta. Você pode perguntar sobre:\n\n• Como ganhar XP\n• Missões semanais\n• Sistema de níveis\n• Análise de setup\n• Ranking e tiers\n• Pontuação do setup\n• Como usar o app\n• Perfil do usuário\n\nTente reformular sua pergunta ou escolha uma das perguntas rápidas acima!'
-  }
-
   const handleSend = () => {
     if (!input.trim()) return
 
@@ -85,11 +38,48 @@ export default function Ajuda() {
     setMessages(prev => [...prev, { role: 'user', text: userMessage }])
     setInput('')
 
-    // Simula um pequeno delay para parecer mais natural
     setTimeout(() => {
-      const aiResponse = getResponse(userMessage)
-      setMessages(prev => [...prev, { role: 'ai', text: aiResponse }])
-    }, 300)
+      const response = generateAIResponse(userMessage)
+      setMessages(prev => [...prev, { role: 'ai', text: response }])
+    }, 500)
+  }
+
+  const generateAIResponse = (message: string): string => {
+    const lowerMessage = message.toLowerCase()
+
+    if (lowerMessage.includes('xp') || lowerMessage.includes('experiência') || lowerMessage.includes('pontos')) {
+      return 'Você pode ganhar XP de várias formas:\n\n• Completar missões diárias (20-40 XP)\n• Completar missões semanais (300-500 XP)\n• Atualizar seu setup (+150 XP)\n• Desbloquear conquistas (+250 XP)\n• Interagir com a comunidade (+30 XP)\n\nQuanto mais XP você ganhar, mais rápido subirá de nível!'
+    }
+
+    if (lowerMessage.includes('missão') || lowerMessage.includes('missões') || lowerMessage.includes('tarefa')) {
+      return 'As missões são divididas em dois tipos:\n\n📅 Missões Diárias: Resetam todo dia e dão 20-40 XP cada\n📆 Missões Semanais: Resetam toda segunda-feira e dão 300-500 XP cada\n\nVá na aba "Missões" para ver todas disponíveis. Complete-as clicando no botão "Completar Missão" e ganhe XP instantaneamente!'
+    }
+
+    if (lowerMessage.includes('setup') || lowerMessage.includes('pc') || lowerMessage.includes('score')) {
+      return 'Seu Setup Score é calculado automaticamente pela IA baseado nas peças do seu PC:\n\n💻 CPU: até 300 pontos\n🎮 GPU: até 400 pontos\n🧠 RAM: até 150 pontos\n💾 Storage: até 100 pontos\n🖥️ Monitor: até 100 pontos\n\nQuanto melhor o hardware, maior o score! Vá em "Meu Setup" para adicionar ou atualizar suas peças. Você ganha +150 XP ao atualizar!'
+    }
+
+    if (lowerMessage.includes('nível') || lowerMessage.includes('nivel') || lowerMessage.includes('subir')) {
+      return 'Para subir de nível, você precisa ganhar XP:\n\n🎯 Nível 0 → 1: 1.000 XP\n🎯 Nível 1 → 2: 2.000 XP\n🎯 Nível 2 → 3: 3.500 XP\n🎯 Nível 3 → 4: 5.000 XP\n🎯 Nível 4 → 5: 8.000 XP\n\nCada nível requer mais XP que o anterior. Complete missões e conquistas para progredir mais rápido!'
+    }
+
+    if (lowerMessage.includes('ranking') || lowerMessage.includes('posição') || lowerMessage.includes('classificação')) {
+      return 'O Ranking Global mostra os melhores jogadores do UPGRD!\n\n🏆 A classificação é baseada nos pontos totais acumulados\n📊 Quanto mais XP você ganhar, maior sua posição\n💎 Melhore seu Setup Score para se destacar\n\nVá na aba "Ranking" para ver sua posição atual e comparar com outros jogadores!'
+    }
+
+    if (lowerMessage.includes('conquista') || lowerMessage.includes('achievement') || lowerMessage.includes('troféu')) {
+      return 'Conquistas são marcos especiais que você pode desbloquear:\n\n🎯 Primeiro Setup Criado\n🥉 Setup Bronze/Prata/Ouro/Diamante\n🎮 10 missões concluídas\n🔥 4 semanas seguidas ativo\n⭐ Nível 5 alcançado\n💯 1000 XP ganhos\n\nCada conquista dá +250 XP de bônus! Veja todas no seu Perfil.'
+    }
+
+    if (lowerMessage.includes('bronze') || lowerMessage.includes('prata') || lowerMessage.includes('ouro') || lowerMessage.includes('diamante')) {
+      return 'As classificações são baseadas no seu Setup Score:\n\n🥉 Bronze: até 500 pontos\n🥈 Prata: 500-1500 pontos\n🥇 Ouro: 1500-3500 pontos\n💎 Diamante: acima de 3500 pontos\n\nMelhore suas peças de hardware para aumentar seu score e alcançar classificações superiores!'
+    }
+
+    if (lowerMessage.includes('como usar') || lowerMessage.includes('começar') || lowerMessage.includes('funciona')) {
+      return 'Bem-vindo ao UPGRD! Aqui está como usar:\n\n1️⃣ Vá em "Meu Setup" e adicione as informações do seu PC\n2️⃣ Complete missões diárias e semanais na aba "Missões"\n3️⃣ Ganhe XP e suba de nível\n4️⃣ Desbloqueie conquistas no seu "Perfil"\n5️⃣ Veja sua posição no "Ranking Global"\n\nO objetivo é melhorar seu setup, ganhar XP e se tornar o melhor jogador do UPGRD!'
+    }
+
+    return 'Posso ajudar você com:\n\n💡 Como ganhar XP\n🎯 Como completar missões\n💻 Como melhorar seu setup\n📈 Como subir de nível\n🏆 Como funciona o ranking\n🎖️ Como desbloquear conquistas\n\nO que você gostaria de saber?'
   }
 
   const quickQuestions = [
