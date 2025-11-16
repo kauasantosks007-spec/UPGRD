@@ -327,17 +327,27 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-lg flex-1 text-[#BEBEBE]">
+            <div className="flex flex-col gap-4">
+              <p className="text-lg text-[#BEBEBE]">
                 {aiSuggestion}
               </p>
-              <Button
-                onClick={generateNewSuggestion}
-                className="bg-transparent border border-[#4DE1FF] text-[#4DE1FF] hover:bg-[#4DE1FF]/10 transition-all whitespace-nowrap"
-                size="lg"
-              >
-                Nova Sugestão
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  onClick={generateNewSuggestion}
+                  className="bg-transparent border border-[#4DE1FF] text-[#4DE1FF] hover:bg-[#4DE1FF]/10 transition-all"
+                  size="lg"
+                >
+                  Nova Sugestão
+                </Button>
+                <Button
+                  onClick={() => router.push('/recomendacoes')}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-all"
+                  size="lg"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Análise Completa IA
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

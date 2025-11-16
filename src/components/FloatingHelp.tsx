@@ -1,46 +1,67 @@
 'use client'
 
-import { useState } from 'react'
-import { MessageCircle, X } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 
 export default function FloatingHelp() {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([
-    { role: 'ai', text: 'Olá! Como posso ajudar você no UPGRD?' }
+  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
+    { role: 'assistant', content: 'Olá! Sou o JARVIS, seu assistente inteligente no UPGRD. Como posso ajudá-lo?' }
   ])
   const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const handleSend = () => {
-    if (!input.trim()) return
+  useEffect(() => {
+    // Auto-scroll para última mensagem
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages])
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return
 
     const userMessage = input.trim()
-    setMessages(prev => [...prev, { role: 'user', text: userMessage }])
+    const newMessages = [...messages, { role: 'user' as const, content: userMessage }]
+    setMessages(newMessages)
     setInput('')
+    setIsLoading(true)
 
-    // Simulated AI responses
-    setTimeout(() => {
-      let response = ''
-      const lowerInput = userMessage.toLowerCase()
+    try {
+      const response = await fetch('/api/jarvis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          conversationHistory: messages,
+        }),
+      })
 
-      if (lowerInput.includes('xp') || lowerInput.includes('experiência')) {
-        response = 'Você ganha XP completando missões, atualizando seu setup e desbloqueando conquistas! Cada ação vale pontos diferentes.'
-      } else if (lowerInput.includes('missão') || lowerInput.includes('missões')) {
-        response = 'As missões resetam toda segunda-feira! Complete-as para ganhar XP e subir de nível. Vá na aba Missões para ver as disponíveis.'
-      } else if (lowerInput.includes('setup') || lowerInput.includes('score')) {
-        response = 'Seu Setup Score é calculado automaticamente pela IA baseado nas peças do seu PC. Quanto melhor o hardware, maior o score! Vá em "Meu Setup" para atualizar.'
-      } else if (lowerInput.includes('nível') || lowerInput.includes('nivel')) {
-        response = 'Você sobe de nível ganhando XP! Cada nível requer mais XP que o anterior. Complete missões e conquistas para progredir mais rápido.'
-      } else if (lowerInput.includes('ranking')) {
-        response = 'O ranking mostra os melhores jogadores do UPGRD! Quanto mais XP e melhor seu setup, maior sua posição no ranking global.'
-      } else {
-        response = 'Posso ajudar com: ganhar XP, completar missões, melhorar setup, subir de nível e entender o ranking. O que você gostaria de saber?'
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao processar mensagem')
       }
 
-      setMessages(prev => [...prev, { role: 'ai', text: response }])
-    }, 500)
+      setMessages([...newMessages, { role: 'assistant', content: data.response }])
+    } catch (error: any) {
+      console.error('Erro ao comunicar com JARVIS:', error)
+      setMessages([
+        ...newMessages,
+        {
+          role: 'assistant',
+          content: 'Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, verifique se a chave da API OpenAI está configurada.',
+        },
+      ])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -49,7 +70,7 @@ export default function FloatingHelp() {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[#0A0A0A] border-2 border-[#4DE1FF]/30 text-[#4DE1FF] hover:border-[#4DE1FF] hover:bg-[#4DE1FF]/10 transition-all z-50"
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[#0A0A0A] border-2 border-[#4DE1FF]/30 text-[#4DE1FF] hover:border-[#4DE1FF] hover:bg-[#4DE1FF]/10 transition-all z-50 shadow-lg shadow-[#4DE1FF]/20"
           size="icon"
         >
           <MessageCircle className="w-6 h-6" />
@@ -58,9 +79,12 @@ export default function FloatingHelp() {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-6 right-6 w-96 h-[500px] bg-[#0A0A0A] border-[#4DE1FF]/30 z-50 flex flex-col">
+        <Card className="fixed bottom-6 right-6 w-96 h-[500px] bg-[#0A0A0A] border-[#4DE1FF]/30 z-50 flex flex-col shadow-2xl">
           <CardHeader className="flex flex-row items-center justify-between border-b border-[#1A1A1A]">
-            <CardTitle className="text-lg text-white">Ajuda IA</CardTitle>
+            <CardTitle className="text-lg text-white flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-[#4DE1FF]" />
+              JARVIS - Assistente IA
+            </CardTitle>
             <Button
               onClick={() => setIsOpen(false)}
               variant="ghost"
@@ -83,25 +107,40 @@ export default function FloatingHelp() {
                       : 'bg-[#111111] text-[#BEBEBE]'
                   }`}
                 >
-                  {msg.text}
+                  <div className="whitespace-pre-line text-sm">{msg.content}</div>
                 </div>
               </div>
             ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-[#111111] text-[#BEBEBE] p-3 rounded-lg flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-[#4DE1FF]" />
+                  <span className="text-sm">JARVIS está pensando...</span>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </CardContent>
           <div className="p-4 border-t border-[#1A1A1A]">
             <div className="flex gap-2">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSend()}
                 placeholder="Digite sua dúvida..."
+                disabled={isLoading}
                 className="flex-1 bg-[#111111] border-[#333333] text-white"
               />
               <Button 
                 onClick={handleSend}
+                disabled={isLoading || !input.trim()}
                 className="bg-[#4DE1FF]/10 border border-[#4DE1FF] text-[#4DE1FF] hover:bg-[#4DE1FF]/20"
               >
-                Enviar
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
               </Button>
             </div>
           </div>

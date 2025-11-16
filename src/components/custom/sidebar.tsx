@@ -12,7 +12,8 @@ import {
   Sparkles, 
   User,
   Menu,
-  X
+  X,
+  HelpCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Conquistas', href: '/conquistas', icon: Award },
   { name: 'Missões Semanais', href: '/missoes', icon: Target },
   { name: 'Especialistas IA', href: '/especialistas', icon: Sparkles },
+  { name: 'Ajuda IA', href: '/ajuda-ia', icon: HelpCircle },
   { name: 'Perfil', href: '/perfil', icon: User },
 ]
 

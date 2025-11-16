@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
 
 export async function POST(request: NextRequest) {
   try {
-    const { imageUrl } = await request.json()
+    const { imageUrl, apiKey } = await request.json()
 
     if (!imageUrl) {
       return NextResponse.json(
@@ -16,16 +11,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `Analise esta imagem de componente de PC e forneça as seguintes informações em formato JSON:
-              
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'API Key não fornecida' },
+        { status: 400 }
+      )
+    }
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Analise esta imagem de componente de PC e forneça as seguintes informações em formato JSON:
+
               {
                 "componentType": "tipo do componente (GPU, CPU, RAM, SSD, Monitor, etc)",
                 "brand": "marca do componente",
@@ -34,24 +42,34 @@ export async function POST(request: NextRequest) {
                 "estimatedValue": "valor estimado em reais (apenas número)",
                 "suggestions": "sugestões de upgrade ou melhorias (máximo 2 frases)"
               }
-              
+
               Se não conseguir identificar claramente, retorne null nos campos que não conseguir determinar.
               Seja específico e técnico nas especificações.`
-            },
-            {
-              type: 'image_url',
-              image_url: {
-                url: imageUrl
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: imageUrl
+                }
               }
-            }
-          ]
-        }
-      ],
-      max_tokens: 500
+            ]
+          }
+        ],
+        max_tokens: 500
+      })
     })
 
-    const content = response.choices[0].message.content
-    
+    if (!response.ok) {
+      const error = await response.json()
+      return NextResponse.json(
+        { error: error.error?.message || 'Erro ao processar requisição' },
+        { status: response.status }
+      )
+    }
+
+    const data = await response.json()
+    const content = data.choices[0].message.content
+
     if (!content) {
       return NextResponse.json(
         { error: 'No response from OpenAI' },

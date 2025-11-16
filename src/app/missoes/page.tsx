@@ -5,12 +5,11 @@ import { useRouter } from 'next/navigation'
 import AppLayout from '@/components/AppLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Target, Calendar, Zap, Upload, CheckCircle, X } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 
 interface Mission {
   id: number
@@ -29,9 +28,53 @@ interface UserMission {
   week_start: string
 }
 
+// Mock missions data
+const MOCK_MISSIONS: Mission[] = [
+  {
+    id: 1,
+    name: 'Benchmark Diário',
+    description: 'Execute um benchmark no seu PC',
+    xp: 50,
+    type: 'daily',
+    requirements: 'Rodar qualquer ferramenta de benchmark'
+  },
+  {
+    id: 2,
+    name: 'Atualizar Driver',
+    description: 'Atualize um driver do sistema',
+    xp: 100,
+    type: 'daily',
+    requirements: 'Atualizar driver de GPU, áudio ou outro componente'
+  },
+  {
+    id: 3,
+    name: 'Limpeza de Sistema',
+    description: 'Faça uma limpeza completa do sistema',
+    xp: 75,
+    type: 'daily',
+    requirements: 'Limpar arquivos temporários e cache'
+  },
+  {
+    id: 4,
+    name: 'Upgrade de Hardware',
+    description: 'Instale ou upgrade um componente',
+    xp: 500,
+    type: 'weekly',
+    requirements: 'Instalar RAM, SSD, GPU ou outro componente'
+  },
+  {
+    id: 5,
+    name: 'Otimização Completa',
+    description: 'Otimize completamente seu setup',
+    xp: 300,
+    type: 'weekly',
+    requirements: 'Aplicar múltiplas otimizações de performance'
+  }
+]
+
 export default function Missoes() {
   const router = useRouter()
-  const [missions, setMissions] = useState<Mission[]>([])
+  const [missions] = useState<Mission[]>(MOCK_MISSIONS)
   const [userMissions, setUserMissions] = useState<UserMission[]>([])
   const [userId, setUserId] = useState<string | null>(null)
   const [userName, setUserName] = useState('')
@@ -45,7 +88,7 @@ export default function Missoes() {
     initializeUser()
   }, [])
 
-  const initializeUser = async () => {
+  const initializeUser = () => {
     const name = localStorage.getItem('upgrd_user_name')
     if (!name) {
       router.push('/')
@@ -53,54 +96,21 @@ export default function Missoes() {
     }
     setUserName(name)
 
-    // For now, create a temporary user ID based on name
-    // In production, this should use Supabase auth
+    // Create a temporary user ID based on name
     const tempUserId = `temp_${name.replace(/\s+/g, '_').toLowerCase()}`
     setUserId(tempUserId)
 
-    // Create profile if not exists
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', tempUserId)
-      .single()
-
-    if (!profile) {
-      await supabase
-        .from('profiles')
-        .insert({
-          id: tempUserId,
-          name: name,
-          xp: 0,
-          level: 1
-        })
-    }
-
-    loadMissions()
+    loadMissions(tempUserId)
   }
 
-  const loadMissions = async () => {
-    if (!userId) return
-
-    // Load all missions
-    const { data: allMissions } = await supabase
-      .from('missions')
-      .select('*')
-
-    if (allMissions) {
-      setMissions(allMissions)
-    }
-
-    // Load user mission progress for current week
+  const loadMissions = (uid: string) => {
+    // Load user mission progress from localStorage
     const currentWeekStart = getWeekStart()
-    const { data: userMissionsData } = await supabase
-      .from('user_missions')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('week_start', currentWeekStart)
-
-    if (userMissionsData) {
-      setUserMissions(userMissionsData)
+    const storageKey = `user_missions_${uid}_${currentWeekStart}`
+    const stored = localStorage.getItem(storageKey)
+    
+    if (stored) {
+      setUserMissions(JSON.parse(stored))
     }
   }
 
@@ -131,54 +141,49 @@ export default function Missoes() {
 
     const currentWeekStart = getWeekStart()
 
-    // Insert or update user mission
-    const { error } = await supabase
-      .from('user_missions')
-      .upsert({
-        user_id: userId,
-        mission_id: missionId,
-        completed: true,
-        completed_at: new Date().toISOString(),
-        week_start: currentWeekStart
-      })
-
-    if (error) {
-      console.error('Error completing mission:', error)
-      return
+    // Create new user mission
+    const newUserMission: UserMission = {
+      id: Date.now(),
+      mission_id: missionId,
+      completed: true,
+      completed_at: new Date().toISOString(),
+      week_start: currentWeekStart
     }
+
+    const updatedMissions = [...userMissions.filter(um => um.mission_id !== missionId), newUserMission]
+    setUserMissions(updatedMissions)
+
+    // Save to localStorage
+    const storageKey = `user_missions_${userId}_${currentWeekStart}`
+    localStorage.setItem(storageKey, JSON.stringify(updatedMissions))
 
     // Award XP
     const mission = missions.find(m => m.id === missionId)
     if (mission) {
       await awardXP(mission.xp)
     }
-
-    // Reload missions
-    loadMissions()
   }
 
   const awardXP = async (xpAmount: number) => {
     if (!userId) return
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('xp, level')
-      .eq('id', userId)
-      .single()
+    // Get current profile from localStorage
+    const profileKey = `profile_${userId}`
+    const stored = localStorage.getItem(profileKey)
+    const profile = stored ? JSON.parse(stored) : { xp: 0, level: 1 }
 
-    if (profile) {
-      const newXp = profile.xp + xpAmount
-      const newLevel = Math.floor(newXp / 1000) + 1
+    const newXp = profile.xp + xpAmount
+    const newLevel = Math.floor(newXp / 1000) + 1
 
-      await supabase
-        .from('profiles')
-        .update({
-          xp: newXp,
-          level: newLevel,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId)
+    // Update profile
+    const updatedProfile = {
+      ...profile,
+      xp: newXp,
+      level: newLevel,
+      updated_at: new Date().toISOString()
     }
+
+    localStorage.setItem(profileKey, JSON.stringify(updatedProfile))
   }
 
   const submitProof = async () => {
