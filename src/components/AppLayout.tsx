@@ -3,7 +3,7 @@
 import { ReactNode, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Monitor, Target, Trophy, User, HelpCircle, TrendingUp, DollarSign, Menu, X, ChevronLeft } from 'lucide-react'
+import { Home, Monitor, Target, Trophy, User, HelpCircle, TrendingUp, DollarSign, Menu, X, ChevronLeft, Users, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface AppLayoutProps {
@@ -50,6 +50,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
     { href: '/upgrade', icon: TrendingUp, label: 'Upgrade' },
     { href: '/missoes', icon: Target, label: 'Missões' },
     { href: '/ranking', icon: Trophy, label: 'Ranking' },
+    { href: '/comunidade', icon: Users, label: 'Comunidade' },
+    { href: '/grupo-promo', icon: Tag, label: 'Grupo de Promo' },
     { href: '/perfil', icon: User, label: 'Perfil' },
     { href: '/ajuda', icon: HelpCircle, label: 'Ajuda IA' },
   ]
